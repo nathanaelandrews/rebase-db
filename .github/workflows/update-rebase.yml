@@ -1,5 +1,4 @@
 name: Update REBASE Database
-
 on:
   schedule:
     - cron: '0 2 1 * *'  # Run on the 1st of every month at 2 AM UTC
@@ -10,48 +9,31 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
       
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-        
-    - name: Run REBASE update check
-      run: python3 update_rebase.py
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
       
-    - name: Check for changes
-      id: verify-changed-files
-      run: |
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "changed=true" >> $GITHUB_OUTPUT
-        else
-          echo "changed=false" >> $GITHUB_OUTPUT
-        fi
-        
-    - name: Commit and push changes
-      if: steps.verify-changed-files.outputs.changed == 'true'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add .
-        git commit -m "Auto-update REBASE database to latest version"
-        git push
-        
-    - name: Create release
-      if: steps.verify-changed-files.outputs.changed == 'true'
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v$(date +'%Y.%m.%d')
-        release_name: REBASE Update $(date +'%Y-%m-%d')
-        body: |
-          Automated update from REBASE database.
-          
-          Updated files:
-          - enzymes.tsv
-          - data/current_version.txt
-        draft: false
-        prerelease: false
+      - name: Run REBASE update check
+        run: python3 update_rebase.py
+      
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Auto-update REBASE database to latest version"
+          git push
